@@ -1,4 +1,11 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+/* eslint jest/expect-expect:["error",{"assertFunctionNames":["expect","waitForElementToBeRemoved"]}] */
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 import Counter from "./Counter";
 import userEvent from "@testing-library/user-event";
 
@@ -17,13 +24,35 @@ describe("Counter", () => {
     });
 
     describe('When the incrementor changes to 5 and "+" button is clicked', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         userEvent.type(screen.getByLabelText(/Incrementor/), "{selectall}5");
         userEvent.click(screen.getByRole("button", { name: "Increment" }));
+        const count = await screen.findByText("Current Count: 15");
+        await waitFor(() => count);
       });
 
       it("Renders 'Current Count: 15", () => {
         expect(screen.getByText("Current Count: 15")).toBeInTheDocument();
+      });
+
+      it("Renders 'Some Data' and will disappear after 300ms", async () => {
+        await waitForElementToBeRemoved(() => screen.queryByText("Some Data"));
+      });
+
+      describe("When the incrementor changes to empty string and '+' button is cliced", () => {
+        beforeEach(async () => {
+          userEvent.type(
+            screen.getByLabelText(/Incrementor/),
+            "{selectall}{delete}"
+          );
+          userEvent.click(screen.getByRole("button", { name: "Increment" }));
+          const count = await screen.findByText("Current Count: 16");
+          await waitFor(() => count);
+        });
+
+        it("Renders 'Current Count: 16'", () => {
+          expect(screen.getByText("Current Count: 16")).toBeInTheDocument();
+        });
       });
     });
 
@@ -53,10 +82,12 @@ describe("Counter", () => {
     });
 
     describe("When + is clicked", () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         fireEvent.click(screen.getByRole("button", { name: "Increment" }));
+        await waitFor(async () => await screen.findByText("Current Count: 1"));
       });
 
+      // const countLabel =await screen.findByText("Current Count: 1")
       it("Renders 'Current Count: 1", () => {
         expect(screen.getByText("Current Count: 1")).toBeInTheDocument();
       });
