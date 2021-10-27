@@ -16,4 +16,8 @@ module.exports = {
       statements: 100,
     },
   },
+  moduleNameMapper: {
+    "\\.(css|less)$":
+      "<rootDir>/src/components/mocking_async/__mocks__/styleMock.js",
+  },
 };
